@@ -1,0 +1,71 @@
+### Get all users
+GET http://localhost:5168/api/users
+
+### Get user by ID
+GET http://localhost:5168/api/users/1
+
+### Get user that doesn't exist
+GET http://localhost:5168/api/users/99
+
+### Create a new user
+POST http://localhost:5168/api/users
+Content-Type: application/json
+
+{
+    "firstName": "issam",
+    "lastName": "Wonder",
+    "email": "alice@example.com",
+    "username": "alicewonder",
+    "role": "User"
+}
+
+### Update a user
+PUT http://localhost:5168/api/users/1
+Content-Type: application/json
+
+{
+    "firstName": "John Updated",
+    "lastName": "Doe",
+    "email": "john.updated@example.com",
+    "username": "johndoe",
+    "role": "Admin",
+    "isActive": true
+}
+
+### Delete a user
+DELETE http://localhost:5168/api/users/5
+```
+
+---
+
+## 👀 How to Send Requests
+
+In VS Code, open `requests.http` — you'll see **"Send Request"** appearing above each request like this:
+```
+### Get all users        ← click "Send Request" above this
+GET http://localhost:5168/api/users
+
+
+### Login
+POST http://localhost:5168/api/auth/login
+Content-Type: application/json
+
+{
+    "username": "johndoe",
+    "password": "Admin123"
+}
+
+### Try without token (should fail)
+GET http://localhost:5168/api/users
+
+### Try with token (should work)
+GET http://localhost:5168/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam9obmRvZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiam9obkBleGFtcGxlLmNvbSIsImV4cCI6MTc3NDA5NTQxOSwiaXNzIjoiVXNlck1hbmFnZW1lbnQuQVBJIiwiYXVkIjoiVXNlck1hbmFnZW1lbnQuQ2xpZW50In0.kX49_GcU1pFx-rGpDRvKQ5Q6q3nMJUGnmswzgtGTcxk
+
+### Get all AD users (need token!)
+GET http://localhost:5168/api/ad/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam9obmRvZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiam9obkBleGFtcGxlLmNvbSIsImV4cCI6MTc3NDEyMjE3OCwiaXNzIjoiVXNlck1hbmFnZW1lbnQuQVBJIiwiYXVkIjoiVXNlck1hbmFnZW1lbnQuQ2xpZW50In0.rNA65KsN8n1Ks_nAN43j-9k4EmFrVWa78ipilkR3dPA
+
+### Test AD route
+GET http://localhost:5168/api/ad/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam9obmRvZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiam9obkBleGFtcGxlLmNvbSIsImV4cCI6MTc3NDEyMjE3OCwiaXNzIjoiVXNlck1hbmFnZW1lbnQuQVBJIiwiYXVkIjoiVXNlck1hbmFnZW1lbnQuQ2xpZW50In0.rNA65KsN8n1Ks_nAN43j-9k4EmFrVWa78ipilkR3dPA
