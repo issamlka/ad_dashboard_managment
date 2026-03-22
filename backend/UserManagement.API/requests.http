@@ -1,5 +1,6 @@
 ### Get all users
 GET http://localhost:5168/api/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam9obmRvZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiam9obkBleGFtcGxlLmNvbSIsImV4cCI6MTc3NDEyMjE3OCwiaXNzIjoiVXNlck1hbmFnZW1lbnQuQVBJIiwiYXVkIjoiVXNlck1hbmFnZW1lbnQuQ2xpZW50In0.rNA65KsN8n1Ks_nAN43j-9k4EmFrVWa78ipilkR3dPA
 
 ### Get user by ID
 GET http://localhost:5168/api/users/1
@@ -8,14 +9,16 @@ GET http://localhost:5168/api/users/1
 GET http://localhost:5168/api/users/99
 
 ### Create a new user
-POST http://localhost:5168/api/users
+PUT http://localhost:5168/api/users/6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam9obmRvZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiam9obkBleGFtcGxlLmNvbSIsImV4cCI6MTc3NDEyNjgwOSwiaXNzIjoiVXNlck1hbmFnZW1lbnQuQVBJIiwiYXVkIjoiVXNlck1hbmFnZW1lbnQuQ2xpZW50In0.FBs4OrY77docJiY6oKk8GNNvy7ccOeTJyI0Xf4js-RM
 Content-Type: application/json
 
 {
     "firstName": "issam",
-    "lastName": "Wonder",
-    "email": "alice@example.com",
-    "username": "alicewonder",
+    "lastName": "helper",
+    "email": "helper@gmail.com",
+    "username": "issamhelper",
+    "password": "Helper123",
     "role": "User"
 }
 
@@ -33,7 +36,8 @@ Content-Type: application/json
 }
 
 ### Delete a user
-DELETE http://localhost:5168/api/users/5
+DELETE http://localhost:5168/api/users/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiam9obmRvZSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IkFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiam9obkBleGFtcGxlLmNvbSIsImV4cCI6MTc3NDEyMjE3OCwiaXNzIjoiVXNlck1hbmFnZW1lbnQuQVBJIiwiYXVkIjoiVXNlck1hbmFnZW1lbnQuQ2xpZW50In0.rNA65KsN8n1Ks_nAN43j-9k4EmFrVWa78ipilkR3dPA
 ```
 
 ---
