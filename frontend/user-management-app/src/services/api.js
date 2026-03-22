@@ -49,6 +49,7 @@ export const adService = {
   getUser: (username) => api.get(`/ad/users/${username}`),
   createUser: (data) => api.post("/ad/users", data),
   disableUser: (username) => api.put(`/ad/users/${username}/disable`),
+  enableUser: (username) => api.put(`/ad/users/${username}/enable`), // ← add
 };
 
 // Config service

@@ -101,34 +101,64 @@ namespace UserManagement.API.Services
         }
 
         // Create AD user
-        public bool CreateUser(string username, string fullName, string password)
+        public bool CreateUser(string username, string firstName, string lastName, string logonName, string password)
+{
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            "CN=Users,DC=ad,DC=issam,DC=com",  // ← specify Users container!
+            _adminUsername,
+            _adminPassword
+        );
+
+        var user = new UserPrincipal(context)
         {
-            try
-            {
-                using var context = new PrincipalContext(
-                    ContextType.Domain,
-                    _server,
-                    _searchBase,
-                    _adminUsername,
-                    _adminPassword
-                );
+            SamAccountName = username,
+            GivenName = firstName,
+            Surname = lastName,
+            DisplayName = $"{firstName} {lastName}",
+            UserPrincipalName = $"{logonName}@{_domain}",
+            Enabled = true,
+        };
 
-                var user = new UserPrincipal(context)
-                {
-                    SamAccountName = username,
-                    DisplayName = fullName,
-                    Enabled = true
-                };
+        user.SetPassword(password);
+        user.Save();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ CreateUser Error: {ex.Message}");
+        Console.WriteLine($"❌ Inner Exception: {ex.InnerException?.Message}");
+        return false;
+    }
+}
 
-                user.SetPassword(password);
-                user.Save();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        public bool EnableUser(string username)
+{
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _searchBase,
+            _adminUsername,
+            _adminPassword
+        );
+
+        var user = UserPrincipal.FindByIdentity(context, username);
+        if (user == null) return false;
+
+        user.Enabled = true;
+        user.Save();
+        return true;
+    }
+    catch
+    {
+        return false;
+    }
+}
 
         // Disable AD user
         public bool DisableUser(string username)
@@ -156,4 +186,7 @@ namespace UserManagement.API.Services
             }
         }
     }
+
+
+    
 }

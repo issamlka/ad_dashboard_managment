@@ -36,14 +36,32 @@ namespace UserManagement.API.Controllers
 
         // POST api/ad/users
         [HttpPost("users")]
-        [Authorize(Roles = "Admin")]
-        public IActionResult CreateAdUser([FromBody] CreateAdUserRequest request)
-        {
-            var result = _ldapService.CreateUser(request.Username, request.FullName, request.Password);
-            if (!result)
-                return BadRequest(new { message = "Failed to create user in Active Directory" });
-            return Ok(new { message = $"User {request.Username} created successfully in Active Directory" });
-        }
+[Authorize(Roles = "Admin")]
+public IActionResult CreateAdUser([FromBody] CreateAdUserRequest request)
+{
+    if (request.Password != request.ConfirmPassword)
+        return BadRequest(new { message = "Passwords do not match" });
+
+    if (string.IsNullOrEmpty(request.FirstName) ||
+        string.IsNullOrEmpty(request.LastName) ||
+        string.IsNullOrEmpty(request.Username) ||
+        string.IsNullOrEmpty(request.LogonName) ||
+        string.IsNullOrEmpty(request.Password))
+        return BadRequest(new { message = "All fields are required" });
+
+    var result = _ldapService.CreateUser(
+        request.Username,
+        request.FirstName,
+        request.LastName,
+        request.LogonName,
+        request.Password
+    );
+
+    if (!result)
+        return BadRequest(new { message = "Failed to create user in Active Directory" });
+
+    return Ok(new { message = $"User {request.Username} created successfully!" });
+}
 
         // PUT api/ad/users/issamsharp/disable
         [HttpPut("users/{username}/disable")]
@@ -55,12 +73,28 @@ namespace UserManagement.API.Controllers
                 return BadRequest(new { message = "Failed to disable user" });
             return Ok(new { message = $"User {username} disabled successfully" });
         }
+
+        // PUT api/ad/users/issamsharp/enable
+        [HttpPut("users/{username}/enable")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult EnableAdUser(string username)
+        {
+            var result = _ldapService.EnableUser(username);
+            if (!result)
+                return BadRequest(new { message = "Failed to enable user" });
+            return Ok(new { message = $"User {username} enabled successfully" });
+        }
     }
 
+    
+
     public class CreateAdUserRequest
-    {
-        public string Username { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+{
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public string LogonName { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
 }
