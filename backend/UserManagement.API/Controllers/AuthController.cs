@@ -26,9 +26,9 @@ namespace UserManagement.API.Controllers
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == request.Username);
 
-            // Check if user exists and password matches
-            if (user == null || user.Password != request.Password)
-                return Unauthorized(new { message = "Invalid username or password" });
+            // ✅ Use BCrypt.Verify instead of == comparison
+    if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+        return Unauthorized(new { message = "Invalid username or password" });
 
             // Check if user is active
             if (!user.IsActive)
