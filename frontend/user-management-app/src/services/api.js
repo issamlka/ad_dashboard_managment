@@ -57,4 +57,11 @@ export const configService = {
   getConfig: () => api.get("/config"),
 };
 
+export const permissionsService = {
+  getMy: () => api.get("/permissions/my"),
+  getByUserId: (userId) => api.get(`/permissions/user/${userId}`),
+  update: (userId, permissions) =>
+    api.put(`/permissions/user/${userId}`, permissions),
+};
+
 export default api;

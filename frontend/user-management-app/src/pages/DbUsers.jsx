@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
-import { usersService } from "../services/api";
+import ReadOnlyBanner from "../components/ReadOnlyBanner";
+import { usersService, permissionsService } from "../services/api";
 import { dbUsersStyles } from "../styles/dbUsers.styles";
 import { showToast } from "../utils/toast";
+import { useRole } from "../hooks/useRole";
 
 export default function DbUsers() {
+  const { isAdmin, permissions } = useRole();
+
+  const canCreate = isAdmin || permissions.canCreateDbUsers;
+  const canEdit = isAdmin || permissions.canEditDbUsers;
+  const canDelete = isAdmin || permissions.canDeleteDbUsers;
   const [users, setUsers] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +22,14 @@ export default function DbUsers() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [selectedPermissions, setSelectedPermissions] = useState({
+    canCreateAdUsers: false,
+    canDisableEnableAdUsers: false,
+    canCreateDbUsers: false,
+    canEditDbUsers: false,
+    canDeleteDbUsers: false,
+  });
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -165,6 +180,42 @@ export default function DbUsers() {
     }
   };
 
+  const handleOpenPermissions = async (user) => {
+    setSelectedUser(user);
+    try {
+      const response = await permissionsService.getByUserId(user.id);
+      setSelectedPermissions({
+        canCreateAdUsers: response.data.canCreateAdUsers,
+        canDisableEnableAdUsers: response.data.canDisableEnableAdUsers,
+        canCreateDbUsers: response.data.canCreateDbUsers,
+        canEditDbUsers: response.data.canEditDbUsers,
+        canDeleteDbUsers: response.data.canDeleteDbUsers,
+      });
+    } catch {
+      setSelectedPermissions({
+        canCreateAdUsers: false,
+        canDisableEnableAdUsers: false,
+        canCreateDbUsers: false,
+        canEditDbUsers: false,
+        canDeleteDbUsers: false,
+      });
+    }
+    setShowPermissionsModal(true);
+  };
+
+  const handleSavePermissions = async () => {
+    try {
+      setActionLoading(true);
+      await permissionsService.update(selectedUser.id, selectedPermissions);
+      showToast.success(`✅ Permissions updated for ${selectedUser.username}`);
+      setShowPermissionsModal(false);
+    } catch (err) {
+      showToast.error("❌ Failed to update permissions");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Reusable form fields for create and edit
   const renderFormFields = (isEdit = false) => (
     <>
@@ -298,16 +349,20 @@ export default function DbUsers() {
                 Manage application login users
               </p>
             </div>
-            <button
-              style={dbUsersStyles.addBtn}
-              onClick={() => {
-                resetForm();
-                setShowCreateModal(true);
-              }}
-            >
-              + Add DB User
-            </button>
+            {canCreate && (
+              <button
+                style={dbUsersStyles.addBtn}
+                onClick={() => {
+                  resetForm();
+                  setShowCreateModal(true);
+                }}
+              >
+                + Add DB User
+              </button>
+            )}
           </div>
+
+          <ReadOnlyBanner />
 
           {/* Table Card */}
           <div style={dbUsersStyles.tableCard}>
@@ -340,7 +395,9 @@ export default function DbUsers() {
                       <th style={dbUsersStyles.th}>Role</th>
                       <th style={dbUsersStyles.th}>Status</th>
                       <th style={dbUsersStyles.th}>Created</th>
-                      <th style={dbUsersStyles.th}>Actions</th>
+                      {(canEdit || canDelete) && (
+                        <th style={dbUsersStyles.th}>Actions</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -381,26 +438,44 @@ export default function DbUsers() {
                         <td style={dbUsersStyles.td}>
                           {new Date(user.createdAt).toLocaleDateString()}
                         </td>
-                        <td style={dbUsersStyles.td}>
-                          <button
-                            style={{
-                              ...dbUsersStyles.actionBtn,
-                              ...dbUsersStyles.editBtn,
-                            }}
-                            onClick={() => handleOpenEdit(user)}
-                          >
-                            ✏️ Edit
-                          </button>
-                          <button
-                            style={{
-                              ...dbUsersStyles.actionBtn,
-                              ...dbUsersStyles.deleteBtn,
-                            }}
-                            onClick={() => handleOpenDelete(user)}
-                          >
-                            🗑️ Delete
-                          </button>
-                        </td>
+                        {(canEdit || canDelete) && (
+                          <td style={dbUsersStyles.td}>
+                            {canEdit && (
+                              <button
+                                style={{
+                                  ...dbUsersStyles.actionBtn,
+                                  ...dbUsersStyles.editBtn,
+                                }}
+                                onClick={() => handleOpenEdit(user)}
+                              >
+                                ✏️ Edit
+                              </button>
+                            )}
+                            {canDelete && (
+                              <button
+                                style={{
+                                  ...dbUsersStyles.actionBtn,
+                                  ...dbUsersStyles.deleteBtn,
+                                }}
+                                onClick={() => handleOpenDelete(user)}
+                              >
+                                🗑️ Delete
+                              </button>
+                            )}
+                            {isAdmin && (
+                              <button
+                                style={{
+                                  ...dbUsersStyles.actionBtn,
+                                  backgroundColor: "#f0e6ff",
+                                  color: "#8e44ad",
+                                }}
+                                onClick={() => handleOpenPermissions(user)}
+                              >
+                                🔑 Permissions
+                              </button>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -537,6 +612,100 @@ export default function DbUsers() {
                   </>
                 ) : (
                   "Yes, Delete"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Permissions Modal */}
+      {showPermissionsModal && (
+        <div style={dbUsersStyles.modalOverlay}>
+          <div style={dbUsersStyles.modalCard}>
+            <h3 style={dbUsersStyles.modalTitle}>🔑 User Permissions</h3>
+            <p style={dbUsersStyles.modalSubtitle}>
+              Managing permissions for <strong>{selectedUser?.username}</strong>
+            </p>
+
+            {/* AD Permissions */}
+            <div
+              style={{
+                backgroundColor: "#f8f9fa",
+                borderRadius: "8px",
+                padding: "15px",
+                marginBottom: "15px",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  color: "#7f8c8d",
+                  textTransform: "uppercase",
+                  marginBottom: "12px",
+                }}
+              >
+                🖥️ Active Directory
+              </div>
+
+              {[
+                { key: "canCreateAdUsers", label: "Create AD Users" },
+                {
+                  key: "canDisableEnableAdUsers",
+                  label: "Disable/Enable AD Users",
+                },
+              ].map((perm) => (
+                <div
+                  key={perm.key}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 0",
+                    borderBottom: "1px solid #f0f0f0",
+                  }}
+                >
+                  <span style={{ fontSize: "14px", color: "#2c3e50" }}>
+                    {perm.label}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={selectedPermissions[perm.key]}
+                    onChange={(e) =>
+                      setSelectedPermissions({
+                        ...selectedPermissions,
+                        [perm.key]: e.target.checked,
+                      })
+                    }
+                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={dbUsersStyles.modalFooter}>
+              <button
+                style={dbUsersStyles.cancelBtn}
+                onClick={() => setShowPermissionsModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  ...dbUsersStyles.submitBtn,
+                  background: "linear-gradient(135deg, #8e44ad, #6c3483)",
+                }}
+                onClick={handleSavePermissions}
+                disabled={actionLoading}
+              >
+                {actionLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "🔑 Save Permissions"
                 )}
               </button>
             </div>

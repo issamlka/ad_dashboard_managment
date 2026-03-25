@@ -2,11 +2,14 @@ import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import { adService } from "../services/api";
+import ReadOnlyBanner from "../components/ReadOnlyBanner";
 import { adUsersStyles } from "../styles/adUsers.styles";
 import { showToast } from "../utils/toast";
 import ConfirmDialog from "../components/ConfirmDialog";
+import { useRole } from "../hooks/useRole";
 
 export default function AdUsers() {
+  const { isAdmin, permissions } = useRole();
   const [users, setUsers] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +42,10 @@ export default function AdUsers() {
     );
     setFiltered(result);
   }, [search, users]);
+
+  // Can create AD users if Admin OR has permission
+  const canCreate = isAdmin || permissions.canCreateAdUsers;
+  const canDisableEnable = isAdmin || permissions.canDisableEnableAdUsers;
 
   const loadUsers = async () => {
     try {
@@ -145,13 +152,18 @@ export default function AdUsers() {
               <h1 style={adUsersStyles.pageTitle}>Active Directory Users</h1>
               <p style={adUsersStyles.pageSubtitle}>Manage your domain users</p>
             </div>
-            <button
-              style={adUsersStyles.addBtn}
-              onClick={() => setShowModal(true)}
-            >
-              + Add AD User
-            </button>
+            {/* Only show Add button for Admin */}
+            {canCreate && (
+              <button
+                style={adUsersStyles.addBtn}
+                onClick={() => setShowModal(true)}
+              >
+                + Add AD User
+              </button>
+            )}
           </div>
+
+          <ReadOnlyBanner />
 
           {/* Table Card */}
           <div style={adUsersStyles.tableCard}>
@@ -182,7 +194,9 @@ export default function AdUsers() {
                       <th style={adUsersStyles.th}>Full Name</th>
                       <th style={adUsersStyles.th}>Email</th>
                       <th style={adUsersStyles.th}>Status</th>
-                      <th style={adUsersStyles.th}>Actions</th>
+                      {(isAdmin || canDisableEnable) && (
+                        <th style={adUsersStyles.th}>Actions</th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -206,32 +220,34 @@ export default function AdUsers() {
                             {user.isEnabled ? "● Active" : "● Disabled"}
                           </span>
                         </td>
-                        <td style={adUsersStyles.td}>
-                          <button
-                            style={{
-                              ...adUsersStyles.actionBtn,
-                              ...(user.isEnabled
-                                ? adUsersStyles.disableBtn
-                                : adUsersStyles.enableBtn),
-                            }}
-                            onClick={() =>
-                              setConfirmDialog({
-                                show: true,
-                                username: user.username,
-                                isEnabled: user.isEnabled,
-                              })
-                            }
-                            disabled={actionLoading === user.username}
-                          >
-                            {actionLoading === user.username ? (
-                              <span className="spinner-border spinner-border-sm"></span>
-                            ) : user.isEnabled ? (
-                              "Disable"
-                            ) : (
-                              "Enable"
-                            )}
-                          </button>
-                        </td>
+                        {(isAdmin || canDisableEnable) && (
+                          <td style={adUsersStyles.td}>
+                            <button
+                              style={{
+                                ...adUsersStyles.actionBtn,
+                                ...(user.isEnabled
+                                  ? adUsersStyles.disableBtn
+                                  : adUsersStyles.enableBtn),
+                              }}
+                              onClick={() =>
+                                setConfirmDialog({
+                                  show: true,
+                                  username: user.username,
+                                  isEnabled: user.isEnabled,
+                                })
+                              }
+                              disabled={actionLoading === user.username}
+                            >
+                              {actionLoading === user.username ? (
+                                <span className="spinner-border spinner-border-sm"></span>
+                              ) : user.isEnabled ? (
+                                "Disable"
+                              ) : (
+                                "Enable"
+                              )}
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

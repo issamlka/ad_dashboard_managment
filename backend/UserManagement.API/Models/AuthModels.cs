@@ -14,5 +14,7 @@ namespace UserManagement.API.Models
         public string Username { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public DateTime ExpiresAt { get; set; }
+        public string Domain { get; set; } = string.Empty;
+        public string AdServer { get; set; } = string.Empty;
     }
 }
