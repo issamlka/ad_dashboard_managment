@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import { adService } from "../services/api";
 import { adUsersStyles } from "../styles/adUsers.styles";
 import { showToast } from "../utils/toast";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function AdUsers() {
   const [users, setUsers] = useState([]);
@@ -12,6 +13,11 @@ export default function AdUsers() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [actionLoading, setActionLoading] = useState("");
+  const [confirmDialog, setConfirmDialog] = useState({
+    show: false,
+    username: "",
+    isEnabled: false,
+  });
   const [newUser, setNewUser] = useState({
     firstName: "",
     lastName: "",
@@ -47,7 +53,8 @@ export default function AdUsers() {
     }
   };
 
-  const handleToggleUser = async (username, isEnabled) => {
+  const handleToggleUser = async () => {
+    const { username, isEnabled } = confirmDialog;
     try {
       setActionLoading(username);
       if (isEnabled) {
@@ -62,6 +69,7 @@ export default function AdUsers() {
       showToast.error(`❌ Failed to ${isEnabled ? "disable" : "enable"} user`);
     } finally {
       setActionLoading("");
+      setConfirmDialog({ show: false, username: "", isEnabled: false });
     }
   };
 
@@ -207,7 +215,11 @@ export default function AdUsers() {
                                 : adUsersStyles.enableBtn),
                             }}
                             onClick={() =>
-                              handleToggleUser(user.username, user.isEnabled)
+                              setConfirmDialog({
+                                show: true,
+                                username: user.username,
+                                isEnabled: user.isEnabled,
+                              })
                             }
                             disabled={actionLoading === user.username}
                           >
@@ -244,7 +256,6 @@ export default function AdUsers() {
               Fill in the details to create a new domain user
             </p>
 
-            {/* First Name & Last Name */}
             <div style={{ display: "flex", gap: "10px" }}>
               <div style={{ flex: 1 }}>
                 <label style={adUsersStyles.modalLabel}>First Name</label>
@@ -393,6 +404,24 @@ export default function AdUsers() {
           </div>
         </div>
       )}
+
+      {/* ✅ Confirm Dialog — disable/enable user */}
+      <ConfirmDialog
+        show={confirmDialog.show}
+        title={confirmDialog.isEnabled ? "Disable User" : "Enable User"}
+        message={
+          confirmDialog.isEnabled
+            ? `Are you sure you want to disable ${confirmDialog.username}? They will lose access to the domain.`
+            : `Are you sure you want to enable ${confirmDialog.username}? They will regain access to the domain.`
+        }
+        confirmText={confirmDialog.isEnabled ? "Yes, Disable" : "Yes, Enable"}
+        confirmColor={confirmDialog.isEnabled ? "red" : "green"}
+        onConfirm={handleToggleUser}
+        onCancel={() =>
+          setConfirmDialog({ show: false, username: "", isEnabled: false })
+        }
+        loading={actionLoading === confirmDialog.username}
+      />
     </div>
   );
 }

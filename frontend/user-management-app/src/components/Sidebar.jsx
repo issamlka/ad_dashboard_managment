@@ -9,8 +9,9 @@ export default function Sidebar() {
 
   const menuItems = [
     { path: "/dashboard", icon: "📊", label: "Dashboard" },
-    { path: "/users", icon: "👥", label: "DB Users" },
+    { path: "/users", icon: "👥", label: "Users" },
     { path: "/ad-users", icon: "🖥️", label: "AD Users" },
+    { path: "/profile", icon: "👤", label: "My Profile" },
   ];
 
   return (

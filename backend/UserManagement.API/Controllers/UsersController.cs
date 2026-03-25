@@ -49,21 +49,25 @@ namespace UserManagement.API.Controllers
         // PUT api/users/1
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] User updatedUser)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound(new { message = $"User with ID {id} not found" });
+{
+    var user = await _context.Users.FindAsync(id);
+    if (user == null)
+        return NotFound(new { message = $"User with ID {id} not found" });
 
-            user.FirstName = updatedUser.FirstName;
-            user.LastName = updatedUser.LastName;
-            user.Email = updatedUser.Email;
-            user.Username = updatedUser.Username;
-            user.Role = updatedUser.Role;
-            user.IsActive = updatedUser.IsActive;
+    user.FirstName = updatedUser.FirstName;
+    user.LastName = updatedUser.LastName;
+    user.Email = updatedUser.Email;
+    user.Username = updatedUser.Username;
+    user.Role = updatedUser.Role;
+    user.IsActive = updatedUser.IsActive;
 
-            await _context.SaveChangesAsync();
-            return Ok(user);
-        }
+    // Only update password if provided
+    if (!string.IsNullOrEmpty(updatedUser.Password))
+        user.Password = updatedUser.Password;
+
+    await _context.SaveChangesAsync();
+    return Ok(user);
+}
 
         // DELETE api/users/1
         [HttpDelete("{id}")]

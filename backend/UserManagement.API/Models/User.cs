@@ -10,7 +10,9 @@ namespace UserManagement.API.Models
         public string Email { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
 
-        [JsonIgnore]
+        // ← Change JsonIgnore to JsonIgnore only on serialization (output)
+        // This allows password to be RECEIVED but never SENT back
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string Password { get; set; } = string.Empty;
 
         public string Role { get; set; } = "User";
