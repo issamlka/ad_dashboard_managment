@@ -11,10 +11,12 @@ namespace UserManagement.API.Controllers
     public class AdController : ControllerBase
     {
         private readonly LdapService _ldapService;
+        private readonly AuditLogService _auditLogService;
 
-        public AdController(LdapService ldapService)
+        public AdController(LdapService ldapService, AuditLogService auditLogService)
         {
             _ldapService = ldapService;
+            _auditLogService = auditLogService;
         }
 
         // GET api/ad/users
@@ -71,50 +73,78 @@ namespace UserManagement.API.Controllers
             if (!result)
                 return BadRequest(new { message = "Failed to create user in Active Directory" });
 
+            // ← Log action
+            _ = _auditLogService.LogAsync(
+                action: "CREATE_AD_USER",
+                performedBy: User.Identity?.Name ?? "Unknown",
+                target: request.Username,
+                details: $"Created AD user {request.Username} ({request.FirstName} {request.LastName})"
+            );
+
             return Ok(new { message = $"User {request.Username} created successfully!" });
         }
 
         // PUT api/ad/users/issamsharp/disable
-        [HttpPut("users/{username}/disable")]
-        [Authorize]
-        public IActionResult DisableAdUser(string username)
-        {
-            var isAdmin = User.IsInRole("Admin");
+[HttpPut("users/{username}/disable")]
+[Authorize]  // ← remove Roles = "Admin"
+public async Task<IActionResult> DisableAdUser(string username)
+{
+    // Check if Admin OR has permission
+    var isAdmin = User.IsInRole("Admin");
+    var hasPermission = User.Claims
+        .FirstOrDefault(c => c.Type == "CanDisableEnableAdUsers")?.Value == "True";
 
-            var canToggle = User.Claims
-                .FirstOrDefault(c => c.Type == "CanDisableEnableAdUsers")?.Value;
+    if (!isAdmin && !hasPermission)
+        return Forbid();
 
-            if (!isAdmin && canToggle != "True")
-                return Forbid("You don't have permission to disable users");
+    var protectedAccounts = new[] { "administrator", "krbtgt" };
+    if (protectedAccounts.Contains(username.ToLower()))
+        return BadRequest(new { message = $"Cannot disable protected account: {username}" });
 
-            var result = _ldapService.DisableUser(username);
+    var result = _ldapService.DisableUser(username);
+    if (!result)
+        return BadRequest(new { message = "Failed to disable user" });
 
-            if (!result)
-                return BadRequest(new { message = "Failed to disable user" });
+    await _auditLogService.LogAsync(
+        action: "DISABLE_AD_USER",
+        performedBy: User.Identity?.Name ?? "Unknown",
+        target: username,
+        details: $"Disabled AD user {username}"
+    );
 
-            return Ok(new { message = $"User {username} disabled successfully" });
-        }
+    return Ok(new { message = $"User {username} disabled successfully" });
+}
 
         // PUT api/ad/users/issamsharp/enable
-        [HttpPut("users/{username}/enable")]
-        [Authorize]
-        public IActionResult EnableAdUser(string username)
-        {
-            var isAdmin = User.IsInRole("Admin");
+[HttpPut("users/{username}/enable")]
+[Authorize]  // ← remove Roles = "Admin"
+public async Task<IActionResult> EnableAdUser(string username)
+{
+    // Check if Admin OR has permission
+    var isAdmin = User.IsInRole("Admin");
+    var hasPermission = User.Claims
+        .FirstOrDefault(c => c.Type == "CanDisableEnableAdUsers")?.Value == "True";
 
-            var canToggle = User.Claims
-                .FirstOrDefault(c => c.Type == "CanDisableEnableAdUsers")?.Value;
+    if (!isAdmin && !hasPermission)
+        return Forbid();
 
-            if (!isAdmin && canToggle != "True")
-                return Forbid("You don't have permission to enable users");
+    var protectedAccounts = new[] { "krbtgt" };
+    if (protectedAccounts.Contains(username.ToLower()))
+        return BadRequest(new { message = $"Cannot modify protected account: {username}" });
 
-            var result = _ldapService.EnableUser(username);
+    var result = _ldapService.EnableUser(username);
+    if (!result)
+        return BadRequest(new { message = "Failed to enable user" });
 
-            if (!result)
-                return BadRequest(new { message = "Failed to enable user" });
+    await _auditLogService.LogAsync(
+        action: "ENABLE_AD_USER",
+        performedBy: User.Identity?.Name ?? "Unknown",
+        target: username,
+        details: $"Enabled AD user {username}"
+    );
 
-            return Ok(new { message = $"User {username} enabled successfully" });
-        }
+    return Ok(new { message = $"User {username} enabled successfully" });
+}
     }
 
     public class CreateAdUserRequest

@@ -12,6 +12,7 @@ namespace UserManagement.API.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<UserPermission> UserPermissions { get; set; } // ← add this
+        public DbSet<AuditLog> AuditLogs { get; set; } // ← add this
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

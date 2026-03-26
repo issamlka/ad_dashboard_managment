@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserManagement.API.Data;
 using UserManagement.API.Models;
+using UserManagement.API.Services;
 
 namespace UserManagement.API.Controllers
 {
@@ -13,10 +14,13 @@ namespace UserManagement.API.Controllers
     {
         private readonly AppDbContext _context;
 
-        public UsersController(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AuditLogService _auditLogService;
+
+        public UsersController(AppDbContext context, AuditLogService auditLogService)
+{
+    _context = context;
+    _auditLogService = auditLogService;
+}
 
         // GET api/users
         [HttpGet]
@@ -36,59 +40,83 @@ namespace UserManagement.API.Controllers
             return Ok(user);
         }
 
-        // POST api/users
-        [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateUser([FromBody] User newUser)
-        {
-            if (string.IsNullOrEmpty(newUser.Password))
-                return BadRequest(new { message = "Password is required" });
+        // Update CreateUser:
+[HttpPost]
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> CreateUser([FromBody] User newUser)
+{
+    if (string.IsNullOrEmpty(newUser.Password))
+        return BadRequest(new { message = "Password is required" });
 
-            // ✅ Hash the password before saving
-            newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
-            newUser.CreatedAt = DateTime.UtcNow;
+    newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
+    newUser.CreatedAt = DateTime.UtcNow;
+    _context.Users.Add(newUser);
+    await _context.SaveChangesAsync();
 
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, newUser);
-        }
+    // ← Log action
+    await _auditLogService.LogAsync(
+        action: "CREATE_DB_USER",
+        performedBy: User.Identity?.Name ?? "Unknown",
+        target: newUser.Username,
+        details: $"Created DB user {newUser.Username} with role {newUser.Role}"
+    );
 
-        // PUT api/users/1
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] User updatedUser)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound(new { message = $"User with ID {id} not found" });
+    return CreatedAtAction(nameof(GetUserById), new { id = newUser.Id }, newUser);
+}
 
-            user.FirstName = updatedUser.FirstName;
-            user.LastName = updatedUser.LastName;
-            user.Email = updatedUser.Email;
-            user.Username = updatedUser.Username;
-            user.Role = updatedUser.Role;
-            user.IsActive = updatedUser.IsActive;
+        // Update UpdateUser:
+[HttpPut("{id}")]
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> UpdateUser(int id, [FromBody] User updatedUser)
+{
+    var user = await _context.Users.FindAsync(id);
+    if (user == null)
+        return NotFound(new { message = $"User with ID {id} not found" });
 
-            // ✅ Only hash and update password if provided
-            if (!string.IsNullOrEmpty(updatedUser.Password))
-                user.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
+    user.FirstName = updatedUser.FirstName;
+    user.LastName = updatedUser.LastName;
+    user.Email = updatedUser.Email;
+    user.Username = updatedUser.Username;
+    user.Role = updatedUser.Role;
+    user.IsActive = updatedUser.IsActive;
 
-            await _context.SaveChangesAsync();
-            return Ok(user);
-        }
+    if (!string.IsNullOrEmpty(updatedUser.Password))
+        user.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
 
-        // DELETE api/users/1
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound(new { message = $"User with ID {id} not found" });
+    await _context.SaveChangesAsync();
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-            return Ok(new { message = $"User with ID {id} deleted successfully" });
-        }
+    // ← Log action
+    await _auditLogService.LogAsync(
+        action: "EDIT_DB_USER",
+        performedBy: User.Identity?.Name ?? "Unknown",
+        target: user.Username,
+        details: $"Updated DB user {user.Username}"
+    );
+
+    return Ok(user);
+}
+
+// Update DeleteUser:
+[HttpDelete("{id}")]
+[Authorize(Roles = "Admin")]
+public async Task<IActionResult> DeleteUser(int id)
+{
+    var user = await _context.Users.FindAsync(id);
+    if (user == null)
+        return NotFound(new { message = $"User with ID {id} not found" });
+
+    _context.Users.Remove(user);
+    await _context.SaveChangesAsync();
+
+    // ← Log action
+    await _auditLogService.LogAsync(
+        action: "DELETE_DB_USER",
+        performedBy: User.Identity?.Name ?? "Unknown",
+        target: user.Username,
+        details: $"Deleted DB user {user.Username}"
+    );
+
+    return Ok(new { message = $"User with ID {id} deleted successfully" });
+}
     }
 }

@@ -29,6 +29,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // JWT Service
 builder.Services.AddScoped<JwtService>();
 
+// Audit Log Service
+builder.Services.AddScoped<AuditLogService>();
+builder.Services.AddHttpContextAccessor();
+
 // LDAP Service
 builder.Services.AddScoped<LdapService>();
 

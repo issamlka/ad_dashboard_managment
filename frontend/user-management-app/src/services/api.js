@@ -32,6 +32,7 @@ api.interceptors.response.use(
 export const authService = {
   login: (username, password) =>
     api.post("/auth/login", { username, password }),
+  logout: () => api.post("/auth/logout"), // ← add this
 };
 
 // Users services
@@ -62,6 +63,10 @@ export const permissionsService = {
   getByUserId: (userId) => api.get(`/permissions/user/${userId}`),
   update: (userId, permissions) =>
     api.put(`/permissions/user/${userId}`, permissions),
+};
+
+export const auditLogService = {
+  getAll: (params) => api.get("/auditlogs", { params }),
 };
 
 export default api;

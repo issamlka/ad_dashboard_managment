@@ -6,6 +6,7 @@ import DbUsers from "./pages/DbUsers";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "react-hot-toast";
+import AuditLogs from "./pages/AuditLogs";
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -39,6 +40,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <DbUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/audit-logs"
+          element={
+            <ProtectedRoute>
+              <AuditLogs />
             </ProtectedRoute>
           }
         />
