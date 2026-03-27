@@ -56,5 +56,84 @@ namespace UserManagement.API.Controllers
                 logs
             });
         }
+
+        [HttpGet("recent-ad-users")]
+public async Task<IActionResult> GetRecentAdUsers()
+{
+    var recentCreated = await _context.AuditLogs
+        .Where(l => l.Action == "CREATE_AD_USER" && l.Status == "SUCCESS")
+        .OrderByDescending(l => l.CreatedAt)
+        .Take(5)
+        .Select(l => new
+        {
+            username = l.Target,
+            createdAt = l.CreatedAt,
+            createdBy = l.PerformedBy,
+        })
+        .ToListAsync();
+
+    return Ok(recentCreated);
+}
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats()
+        {
+            // Last 7 days activity
+            var nowUtc = DateTime.UtcNow;
+            var last7Days = Enumerable.Range(0, 7)
+                .Select(i => nowUtc.Date.AddDays(-i))
+                .OrderBy(d => d)
+                .ToList();
+
+            var activityData = new List<object>();
+            foreach (var day in last7Days)
+            {
+                var dayStart = day;
+                var dayEnd = day.AddDays(1);
+
+                var count = await _context.AuditLogs
+                    .CountAsync(l => l.CreatedAt >= dayStart && l.CreatedAt < dayEnd);
+
+                activityData.Add(new
+                {
+                    date = day.ToString("MMM dd"),
+                    actions = count
+                });
+            }
+
+            // Most active users (top 5)
+            var mostActiveUsers = await _context.AuditLogs
+                .Where(l => l.Status == "SUCCESS")
+                .GroupBy(l => l.PerformedBy)
+                .Select(g => new
+                {
+                    username = g.Key,
+                    actions = g.Count()
+                })
+                .OrderByDescending(x => x.actions)
+                .Take(5)
+                .ToListAsync();
+
+            // Total stats
+            var totalActions = await _context.AuditLogs.CountAsync();
+            var successActions = await _context.AuditLogs
+                .CountAsync(l => l.Status == "SUCCESS");
+            var failedActions = await _context.AuditLogs
+                .CountAsync(l => l.Status == "FAILED");
+            var todayStart = nowUtc.Date;
+            var todayEnd = todayStart.AddDays(1);
+            var todayActions = await _context.AuditLogs
+                .CountAsync(l => l.CreatedAt >= todayStart && l.CreatedAt < todayEnd);
+
+            return Ok(new
+            {
+                activityData,
+                mostActiveUsers,
+                totalActions,
+                successActions,
+                failedActions,
+                todayActions
+            });
+        }
     }
 }

@@ -7,18 +7,33 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { config, loading } = useConfig();
-  const { isAdmin } = useRole();
+  const { role } = useRole(); // ← add role
 
   const menuItems = [
-    { path: "/dashboard", icon: "📊", label: "Dashboard", adminOnly: false },
-    { path: "/users", icon: "👥", label: "DB Users", adminOnly: true },
-    { path: "/ad-users", icon: "🖥️", label: "AD Users", adminOnly: false },
-    { path: "/audit-logs", icon: "📋", label: "Audit Logs", adminOnly: true },
-    { path: "/profile", icon: "👤", label: "My Profile", adminOnly: false },
+    {
+      path: "/dashboard",
+      icon: "📊",
+      label: "Dashboard",
+      roles: ["Admin", "User"],
+    },
+    { path: "/users", icon: "👥", label: "DB Users", roles: ["Admin"] },
+    {
+      path: "/ad-users",
+      icon: "🖥️",
+      label: "AD Users",
+      roles: ["Admin", "User"],
+    },
+    { path: "/audit-logs", icon: "📋", label: "Audit Logs", roles: ["Admin"] },
+    {
+      path: "/profile",
+      icon: "👤",
+      label: "My Profile",
+      roles: ["Admin", "User"],
+    },
   ];
 
   // Filter menu based on role
-  const visibleItems = menuItems.filter((item) => !item.adminOnly || isAdmin);
+  const visibleItems = menuItems.filter((item) => item.roles.includes(role));
 
   return (
     <div style={sidebarStyles.sidebar}>

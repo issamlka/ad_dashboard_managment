@@ -67,6 +67,8 @@ export const permissionsService = {
 
 export const auditLogService = {
   getAll: (params) => api.get("/auditlogs", { params }),
+  getStats: () => api.get("/auditlogs/stats"), // ← add this
+  getRecentAdUsers: () => api.get("/auditlogs/recent-ad-users"), // ← add
 };
 
 export default api;

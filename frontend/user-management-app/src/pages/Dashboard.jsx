@@ -1,17 +1,40 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { usersService, adService } from "../services/api";
-import { dashboardStyles } from "../styles/dashboard.styles";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import { usersService, adService, auditLogService } from "../services/api";
+import { dashboardStyles } from "../styles/dashboard.styles";
+import { useRole } from "../hooks/useRole";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  Legend,
+} from "recharts";
 
 export default function Dashboard() {
+  const { role } = useRole();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalDbUsers: 0,
     totalAdUsers: 0,
     activeAdUsers: 0,
     disabledAdUsers: 0,
+  });
+  const [chartStats, setChartStats] = useState({
+    activityData: [],
+    mostActiveUsers: [],
+    totalActions: 0,
+    successActions: 0,
+    failedActions: 0,
+    todayActions: 0,
   });
   const [recentUsers, setRecentUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +47,8 @@ export default function Dashboard() {
   const loadStats = async () => {
     try {
       setRefreshing(true);
+
+      // Base calls for everyone
       const [dbUsers, adUsers] = await Promise.all([
         usersService.getAll(),
         adService.getAll(),
@@ -41,6 +66,12 @@ export default function Dashboard() {
       });
 
       setRecentUsers(adData.slice(0, 5));
+
+      // Only fetch audit stats for Admin
+      if (role === "Admin") {
+        const auditStats = await auditLogService.getStats();
+        setChartStats(auditStats.data);
+      }
     } catch (err) {
       console.error("Failed to load stats", err);
     } finally {
@@ -53,28 +84,38 @@ export default function Dashboard() {
     {
       label: "DB Users",
       value: stats.totalDbUsers,
+      subLabel: "Total app users",
       icon: "🗄️",
       style: dashboardStyles.statCardBlue,
+      adminOnly: true,
     },
     {
       label: "AD Users",
       value: stats.totalAdUsers,
+      subLabel: `${stats.activeAdUsers} active`,
       icon: "👥",
       style: dashboardStyles.statCardGreen,
+      adminOnly: true,
     },
     {
       label: "Active AD Users",
       value: stats.activeAdUsers,
+      subLabel: "Currently enabled",
       icon: "✅",
       style: dashboardStyles.statCardOrange,
+      adminOnly: false,
     },
     {
       label: "Disabled AD Users",
       value: stats.disabledAdUsers,
+      subLabel: "Currently disabled",
       icon: "🚫",
       style: dashboardStyles.statCardRed,
+      adminOnly: false,
     },
   ];
+
+  const COLORS = ["#3498db", "#2ecc71", "#e67e22", "#e74c3c", "#9b59b6"];
 
   return (
     <div style={dashboardStyles.wrapper}>
@@ -110,7 +151,6 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Stat Cards */}
           {loading ? (
             <div style={dashboardStyles.loadingBox}>
               <div className="spinner-border text-primary"></div>
@@ -118,20 +158,180 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
+              {/* Enhanced Stat Cards */}
               <div style={dashboardStyles.statsGrid}>
-                {statCards.map((card, index) => (
-                  <div
-                    key={index}
-                    style={{ ...dashboardStyles.statCard, ...card.style }}
-                  >
-                    <div>
-                      <div style={dashboardStyles.statNumber}>{card.value}</div>
-                      <div style={dashboardStyles.statLabel}>{card.label}</div>
+                {statCards
+                  .filter((card) => !card.adminOnly || role === "Admin")
+                  .map((card, index) => (
+                    <div
+                      key={index}
+                      style={{ ...dashboardStyles.statCard, ...card.style }}
+                    >
+                      <div>
+                        <div style={dashboardStyles.statNumber}>
+                          {card.value}
+                        </div>
+                        <div style={dashboardStyles.statLabel}>
+                          {card.label}
+                        </div>
+                        <div style={dashboardStyles.statSubLabel}>
+                          {card.subLabel}
+                        </div>
+                      </div>
+                      <div style={dashboardStyles.statIcon}>{card.icon}</div>
                     </div>
-                    <div style={dashboardStyles.statIcon}>{card.icon}</div>
-                  </div>
-                ))}
+                  ))}
               </div>
+
+              {/* Mini Stats Row — Admin only */}
+              {role === "Admin" && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "15px",
+                    marginBottom: "25px",
+                  }}
+                >
+                  {[
+                    {
+                      label: "Total Actions",
+                      value: chartStats.totalActions,
+                      color: "#2c3e50",
+                    },
+                    {
+                      label: "Today's Actions",
+                      value: chartStats.todayActions,
+                      color: "#3498db",
+                    },
+                    {
+                      label: "Failed Actions",
+                      value: chartStats.failedActions,
+                      color: "#e74c3c",
+                    },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        backgroundColor: "white",
+                        borderRadius: "10px",
+                        padding: "15px 20px",
+                        boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        borderLeft: `4px solid ${item.color}`,
+                      }}
+                    >
+                      <div style={{ fontSize: "13px", color: "#7f8c8d" }}>
+                        {item.label}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "22px",
+                          fontWeight: "700",
+                          color: item.color,
+                        }}
+                      >
+                        {item.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Charts Grid */}
+              {role === "Admin" && (
+                <div style={dashboardStyles.chartsGrid}>
+                  {/* Line Chart — Activity Last 7 Days */}
+                  <div style={dashboardStyles.chartCard}>
+                    <div style={dashboardStyles.chartTitle}>
+                      📈 Activity — Last 7 Days
+                    </div>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={chartStats.activityData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis
+                          dataKey="date"
+                          tick={{ fontSize: 12, fill: "#7f8c8d" }}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 12, fill: "#7f8c8d" }}
+                          allowDecimals={false}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: "8px",
+                            border: "none",
+                            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="actions"
+                          stroke="#3498db"
+                          strokeWidth={3}
+                          dot={{ fill: "#3498db", r: 5 }}
+                          activeDot={{ r: 7 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Bar Chart — Most Active Users */}
+                  <div style={dashboardStyles.chartCard}>
+                    <div style={dashboardStyles.chartTitle}>
+                      👥 Most Active Users
+                    </div>
+                    {chartStats.mostActiveUsers.length === 0 ? (
+                      <div
+                        style={{
+                          height: "250px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#7f8c8d",
+                          fontSize: "14px",
+                        }}
+                      >
+                        No activity data yet
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={chartStats.mostActiveUsers}>
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            stroke="#f0f0f0"
+                          />
+                          <XAxis
+                            dataKey="username"
+                            tick={{ fontSize: 12, fill: "#7f8c8d" }}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 12, fill: "#7f8c8d" }}
+                            allowDecimals={false}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              borderRadius: "8px",
+                              border: "none",
+                              boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+                            }}
+                          />
+                          <Bar dataKey="actions" radius={[6, 6, 0, 0]}>
+                            {chartStats.mostActiveUsers.map((_, index) => (
+                              <Cell
+                                key={index}
+                                fill={COLORS[index % COLORS.length]}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Recent AD Users Table */}
               <div style={dashboardStyles.tableCard}>

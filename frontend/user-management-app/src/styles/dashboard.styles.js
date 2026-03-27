@@ -157,4 +157,38 @@ export const dashboardStyles = {
     borderTop: "1px solid #f0f0f0",
     backgroundColor: "white",
   },
+
+  // Add to existing dashboard.styles.js
+  chartsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)",
+    gap: "20px",
+    marginBottom: "30px",
+  },
+  chartCard: {
+    backgroundColor: "white",
+    borderRadius: "12px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+    padding: "20px",
+  },
+  chartTitle: {
+    fontSize: "16px",
+    fontWeight: "600",
+    color: "#2c3e50",
+    marginBottom: "20px",
+  },
+  statCardEnhanced: {
+    borderRadius: "12px",
+    padding: "20px",
+    color: "white",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+  },
+  statSubLabel: {
+    fontSize: "11px",
+    opacity: 0.8,
+    marginTop: "3px",
+  },
 };
