@@ -6,6 +6,7 @@ import { usersService, permissionsService } from "../services/api";
 import { dbUsersStyles } from "../styles/dbUsers.styles";
 import { showToast } from "../utils/toast";
 import { useRole } from "../hooks/useRole";
+import { useModalKeyboard } from "../hooks/useModalKeyboard";
 
 export default function DbUsers() {
   const { isAdmin, permissions } = useRole();
@@ -179,6 +180,42 @@ export default function DbUsers() {
       setActionLoading(false);
     }
   };
+
+  // Create Modal
+  useModalKeyboard({
+    isOpen: showCreateModal,
+    onEscape: () => {
+      setShowCreateModal(false);
+      resetForm();
+    },
+    onEnter: handleCreate,
+  });
+
+  // Edit Modal
+  useModalKeyboard({
+    isOpen: showEditModal,
+    onEscape: () => {
+      setShowEditModal(false);
+      resetForm();
+    },
+    onEnter: handleEdit,
+  });
+
+  // Delete Modal
+  useModalKeyboard({
+    isOpen: showDeleteModal,
+    onEscape: () => setShowDeleteModal(false),
+    onEnter: handleDelete,
+  });
+
+  // Permissions Modal
+  useModalKeyboard({
+    isOpen: showPermissionsModal,
+    onEscape: () => setShowPermissionsModal(false),
+    onEnter: () => {
+      if (!actionLoading) handleSavePermissions();
+    },
+  });
 
   const handleOpenPermissions = async (user) => {
     setSelectedUser(user);
@@ -372,7 +409,7 @@ export default function DbUsers() {
               </div>
               <input
                 style={dbUsersStyles.searchInput}
-                placeholder="🔍 Search users..."
+                placeholder="Search users..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -420,7 +457,7 @@ export default function DbUsers() {
                                 : dbUsersStyles.badgeUser),
                             }}
                           >
-                            {user.role === "Admin" ? "👑 Admin" : "👤 User"}
+                            {user.role === "Admin" ? "Admin" : "User"}
                           </span>
                         </td>
                         <td style={dbUsersStyles.td}>
@@ -448,7 +485,7 @@ export default function DbUsers() {
                                 }}
                                 onClick={() => handleOpenEdit(user)}
                               >
-                                ✏️ Edit
+                                Edit
                               </button>
                             )}
                             {canDelete && (
@@ -459,7 +496,7 @@ export default function DbUsers() {
                                 }}
                                 onClick={() => handleOpenDelete(user)}
                               >
-                                🗑️ Delete
+                                Delete
                               </button>
                             )}
                             {isAdmin && (
@@ -471,7 +508,7 @@ export default function DbUsers() {
                                 }}
                                 onClick={() => handleOpenPermissions(user)}
                               >
-                                🔑 Permissions
+                                Permissions
                               </button>
                             )}
                           </td>
@@ -623,7 +660,7 @@ export default function DbUsers() {
       {showPermissionsModal && (
         <div style={dbUsersStyles.modalOverlay}>
           <div style={dbUsersStyles.modalCard}>
-            <h3 style={dbUsersStyles.modalTitle}>🔑 User Permissions</h3>
+            <h3 style={dbUsersStyles.modalTitle}>User Permissions</h3>
             <p style={dbUsersStyles.modalSubtitle}>
               Managing permissions for <strong>{selectedUser?.username}</strong>
             </p>
@@ -646,7 +683,7 @@ export default function DbUsers() {
                   marginBottom: "12px",
                 }}
               >
-                🖥️ Active Directory
+                Active Directory
               </div>
 
               {[
@@ -705,7 +742,7 @@ export default function DbUsers() {
                     Saving...
                   </>
                 ) : (
-                  "🔑 Save Permissions"
+                  "Save Permissions"
                 )}
               </button>
             </div>

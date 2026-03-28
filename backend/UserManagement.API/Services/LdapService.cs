@@ -23,6 +23,168 @@ namespace UserManagement.API.Services
             _adminPassword = configuration["LdapSettings:AdminPassword"]!;
         }
 
+        // Get all groups
+public List<AdGroup> GetAllGroups()
+{
+    var groups = new List<AdGroup>();
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _searchBase,
+            _adminUsername,
+            _adminPassword
+        );
+
+        using var searcher = new PrincipalSearcher(new GroupPrincipal(context));
+
+        foreach (var result in searcher.FindAll())
+        {
+            if (result is GroupPrincipal group)
+            {
+                groups.Add(new AdGroup
+                {
+                    Name = group.Name ?? "",
+                    Description = group.Description ?? "",
+                    MemberCount = group.Members.Count(),
+                });
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ GetAllGroups Error: {ex.Message}");
+    }
+    return groups;
+}
+
+// Get group members
+public List<AdUser> GetGroupMembers(string groupName)
+{
+    var members = new List<AdUser>();
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _searchBase,
+            _adminUsername,
+            _adminPassword
+        );
+
+        var group = GroupPrincipal.FindByIdentity(context, groupName);
+        if (group == null) return members;
+
+        foreach (var member in group.Members)
+        {
+            if (member is UserPrincipal user)
+            {
+                members.Add(new AdUser
+                {
+                    Username = user.SamAccountName ?? "",
+                    FullName = user.DisplayName ?? user.SamAccountName ?? "",
+                    Email = user.EmailAddress ?? "",
+                    IsEnabled = user.Enabled ?? false,
+                });
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ GetGroupMembers Error: {ex.Message}");
+    }
+    return members;
+}
+
+// Create group
+public bool CreateGroup(string groupName, string description)
+{
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _searchBase,
+            _adminUsername,
+            _adminPassword
+        );
+
+        var group = new GroupPrincipal(context)
+        {
+            Name = groupName,
+            Description = description,
+            IsSecurityGroup = true,
+        };
+
+        group.Save();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ CreateGroup Error: {ex.Message}");
+        return false;
+    }
+}
+
+// Add user to group
+public bool AddUserToGroup(string groupName, string username)
+{
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _searchBase,
+            _adminUsername,
+            _adminPassword
+        );
+
+        var group = GroupPrincipal.FindByIdentity(context, groupName);
+        var user = UserPrincipal.FindByIdentity(context, username);
+
+        if (group == null || user == null) return false;
+
+        group.Members.Add(user);
+        group.Save();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ AddUserToGroup Error: {ex.Message}");
+        return false;
+    }
+}
+
+// Remove user from group
+public bool RemoveUserFromGroup(string groupName, string username)
+{
+    try
+    {
+        using var context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _searchBase,
+            _adminUsername,
+            _adminPassword
+        );
+
+        var group = GroupPrincipal.FindByIdentity(context, groupName);
+        var user = UserPrincipal.FindByIdentity(context, username);
+
+        if (group == null || user == null) return false;
+
+        group.Members.Remove(user);
+        group.Save();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ RemoveUserFromGroup Error: {ex.Message}");
+        return false;
+    }
+}
+
         // Get all AD users
         public List<AdUser> GetAllUsers()
         {

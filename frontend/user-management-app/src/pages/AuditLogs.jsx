@@ -53,22 +53,28 @@ export default function AuditLogs() {
       DISABLE_AD_USER: auditLogsStyles.actionDisable,
       ENABLE_AD_USER: auditLogsStyles.actionEnable,
       LOGOUT: auditLogsStyles.actionLogin,
+      CREATE_AD_GROUP: auditLogsStyles.actionCreate,
+      ADD_USER_TO_GROUP: auditLogsStyles.actionCreate,
+      REMOVE_USER_FROM_GROUP: auditLogsStyles.actionDelete,
     };
     return map[action] || auditLogsStyles.actionLogin;
   };
 
   const getActionIcon = (action) => {
     const map = {
-      LOGIN: "🔐",
-      CREATE_DB_USER: "➕",
-      EDIT_DB_USER: "✏️",
-      DELETE_DB_USER: "🗑️",
-      CREATE_AD_USER: "➕",
-      DISABLE_AD_USER: "🚫",
-      ENABLE_AD_USER: "✅",
-      LOGOUT: "🚪",
+      LOGIN: "",
+      CREATE_DB_USER: "",
+      EDIT_DB_USER: "",
+      DELETE_DB_USER: "",
+      CREATE_AD_USER: "",
+      DISABLE_AD_USER: "",
+      ENABLE_AD_USER: "",
+      LOGOUT: "",
+      CREATE_AD_GROUP: "",
+      ADD_USER_TO_GROUP: "",
+      REMOVE_USER_FROM_GROUP: "",
     };
-    return map[action] || "📋";
+    return map[action] || "";
   };
 
   return (
@@ -106,7 +112,7 @@ export default function AuditLogs() {
                   Refreshing...
                 </>
               ) : (
-                "🔄 Refresh"
+                "Refresh"
               )}
             </button>
           </div>
@@ -122,14 +128,17 @@ export default function AuditLogs() {
               }}
             >
               <option value="">All Actions</option>
-              <option value="LOGIN">🔐 Login</option>
-              <option value="LOGOUT">🚪 Logout</option>
-              <option value="CREATE_DB_USER">➕ Create DB User</option>
-              <option value="EDIT_DB_USER">✏️ Edit DB User</option>
-              <option value="DELETE_DB_USER">🗑️ Delete DB User</option>
-              <option value="CREATE_AD_USER">➕ Create AD User</option>
-              <option value="DISABLE_AD_USER">🚫 Disable AD User</option>
-              <option value="ENABLE_AD_USER">✅ Enable AD User</option>
+              <option value="LOGIN">Login</option>
+              <option value="LOGOUT">Logout</option>
+              <option value="CREATE_DB_USER">Create DB User</option>
+              <option value="EDIT_DB_USER">Edit DB User</option>
+              <option value="DELETE_DB_USER">Delete DB User</option>
+              <option value="CREATE_AD_USER">Create AD User</option>
+              <option value="DISABLE_AD_USER">Disable AD User</option>
+              <option value="ENABLE_AD_USER">Enable AD User</option>
+              <option value="CREATE_AD_GROUP">Create AD Group</option>
+              <option value="ADD_USER_TO_GROUP">Add to Group</option>
+              <option value="REMOVE_USER_FROM_GROUP">Remove from Group</option>
             </select>
 
             <select
@@ -141,13 +150,13 @@ export default function AuditLogs() {
               }}
             >
               <option value="">All Statuses</option>
-              <option value="SUCCESS">✅ Success</option>
-              <option value="FAILED">❌ Failed</option>
+              <option value="SUCCESS">Success</option>
+              <option value="FAILED">Failed</option>
             </select>
 
             <input
               style={auditLogsStyles.filterInput}
-              placeholder="🔍 Filter by user..."
+              placeholder="Filter by user..."
               value={filters.performedBy}
               onChange={(e) => {
                 setFilters({ ...filters, performedBy: e.target.value });
@@ -242,8 +251,8 @@ export default function AuditLogs() {
                                 }}
                               >
                                 {log.status === "SUCCESS"
-                                  ? "✅ Success"
-                                  : "❌ Failed"}
+                                  ? "Success"
+                                  : "Failed"}
                               </span>
                             </td>
                             <td style={auditLogsStyles.td}>

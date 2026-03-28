@@ -17,7 +17,7 @@ export default function NotFound() {
         padding: "20px",
       }}
     >
-      <div style={{ fontSize: "120px", lineHeight: 1 }}>🔍</div>
+      <div style={{ fontSize: "120px", lineHeight: 1 }}></div>
       <h1
         style={{
           fontSize: "80px",
@@ -63,7 +63,7 @@ export default function NotFound() {
             cursor: "pointer",
           }}
         >
-          🏠 Dashboard
+          Dashboard
         </button>
       </div>
     </div>

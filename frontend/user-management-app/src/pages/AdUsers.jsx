@@ -7,6 +7,7 @@ import { adUsersStyles } from "../styles/adUsers.styles";
 import { showToast } from "../utils/toast";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { useRole } from "../hooks/useRole";
+import { useModalKeyboard } from "../hooks/useModalKeyboard";
 
 export default function AdUsers() {
   const { isAdmin, permissions } = useRole();
@@ -140,6 +141,25 @@ export default function AdUsers() {
     });
   };
 
+  // Create Modal (AD User)
+  useModalKeyboard({
+    isOpen: showModal,
+    onEscape: resetModal,
+    onEnter: () => {
+      if (actionLoading !== "creating") handleCreateUser();
+    },
+  });
+
+  // Confirm Dialog (Enable / Disable User)
+  useModalKeyboard({
+    isOpen: confirmDialog.show,
+    onEscape: () =>
+      setConfirmDialog({ show: false, username: "", isEnabled: false }),
+    onEnter: () => {
+      if (actionLoading !== confirmDialog.username) handleToggleUser();
+    },
+  });
+
   return (
     <div style={adUsersStyles.wrapper}>
       <Sidebar />
@@ -173,7 +193,7 @@ export default function AdUsers() {
               </div>
               <input
                 style={adUsersStyles.searchInput}
-                placeholder="🔍 Search users..."
+                placeholder="Search users..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

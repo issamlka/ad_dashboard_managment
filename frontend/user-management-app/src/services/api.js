@@ -71,4 +71,19 @@ export const auditLogService = {
   getRecentAdUsers: () => api.get("/auditlogs/recent-ad-users"), // ← add
 };
 
+export const adGroupsService = {
+  getAll: () => api.get("/adgroups"),
+  getMembers: (groupName) =>
+    api.get(`/adgroups/${encodeURIComponent(groupName)}/members`),
+  create: (data) => api.post("/adgroups", data),
+  addMember: (groupName, username) =>
+    api.post(`/adgroups/${encodeURIComponent(groupName)}/members`, {
+      username,
+    }),
+  removeMember: (groupName, username) =>
+    api.delete(
+      `/adgroups/${encodeURIComponent(groupName)}/members/${username}`,
+    ),
+};
+
 export default api;

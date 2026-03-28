@@ -61,7 +61,7 @@ export default function Profile() {
                         : username}
                     </div>
                     <div style={profileStyles.profileRole}>
-                      {role === "Admin" ? "👑 Administrator" : "👤 User"}
+                      {role === "Admin" ? "Administrator" : "User"}
                     </div>
                   </div>
                 </div>

@@ -12,22 +12,28 @@ export default function Sidebar() {
   const menuItems = [
     {
       path: "/dashboard",
-      icon: "📊",
+      icon: "",
       label: "Dashboard",
       roles: ["Admin", "User"],
     },
-    { path: "/users", icon: "👥", label: "DB Users", roles: ["Admin"] },
+    { path: "/users", icon: "", label: "DB Users", roles: ["Admin"] },
     {
       path: "/ad-users",
-      icon: "🖥️",
+      icon: "",
       label: "AD Users",
       roles: ["Admin", "User"],
     },
-    { path: "/audit-logs", icon: "📋", label: "Audit Logs", roles: ["Admin"] },
+    { path: "/audit-logs", icon: "", label: "Audit Logs", roles: ["Admin"] },
     {
       path: "/profile",
-      icon: "👤",
+      icon: "",
       label: "My Profile",
+      roles: ["Admin", "User"],
+    },
+    {
+      path: "/ad-groups",
+      icon: "",
+      label: "AD Groups",
       roles: ["Admin", "User"],
     },
   ];
@@ -37,7 +43,7 @@ export default function Sidebar() {
 
   return (
     <div style={sidebarStyles.sidebar}>
-      <div style={sidebarStyles.logo}>🛡️ UserManager</div>
+      <div style={sidebarStyles.logo}>UserManager</div>
       <div style={sidebarStyles.menu}>
         {visibleItems.map((item) => (
           <div

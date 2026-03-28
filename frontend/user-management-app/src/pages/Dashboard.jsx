@@ -85,7 +85,7 @@ export default function Dashboard() {
       label: "DB Users",
       value: stats.totalDbUsers,
       subLabel: "Total app users",
-      icon: "🗄️",
+      icon: "",
       style: dashboardStyles.statCardBlue,
       adminOnly: true,
     },
@@ -93,7 +93,7 @@ export default function Dashboard() {
       label: "AD Users",
       value: stats.totalAdUsers,
       subLabel: `${stats.activeAdUsers} active`,
-      icon: "👥",
+      icon: "",
       style: dashboardStyles.statCardGreen,
       adminOnly: true,
     },
@@ -101,7 +101,7 @@ export default function Dashboard() {
       label: "Active AD Users",
       value: stats.activeAdUsers,
       subLabel: "Currently enabled",
-      icon: "✅",
+      icon: "",
       style: dashboardStyles.statCardOrange,
       adminOnly: false,
     },
@@ -109,7 +109,7 @@ export default function Dashboard() {
       label: "Disabled AD Users",
       value: stats.disabledAdUsers,
       subLabel: "Currently disabled",
-      icon: "🚫",
+      icon: "",
       style: dashboardStyles.statCardRed,
       adminOnly: false,
     },
@@ -126,7 +126,7 @@ export default function Dashboard() {
           {/* Page Title + Refresh */}
           <div style={dashboardStyles.pageTitleRow}>
             <div>
-              <h1 style={dashboardStyles.pageTitle}>Welcome back! 👋</h1>
+              <h1 style={dashboardStyles.pageTitle}>Welcome back</h1>
               <p style={dashboardStyles.pageSubtitle}>
                 Here's what's happening in your domain
               </p>
@@ -146,7 +146,7 @@ export default function Dashboard() {
                   Refreshing...
                 </>
               ) : (
-                "🔄 Refresh"
+                "Refresh"
               )}
             </button>
           </div>
@@ -246,7 +246,7 @@ export default function Dashboard() {
                   {/* Line Chart — Activity Last 7 Days */}
                   <div style={dashboardStyles.chartCard}>
                     <div style={dashboardStyles.chartTitle}>
-                      📈 Activity — Last 7 Days
+                      Activity — Last 7 Days
                     </div>
                     <ResponsiveContainer width="100%" height={250}>
                       <LineChart data={chartStats.activityData}>
@@ -281,7 +281,7 @@ export default function Dashboard() {
                   {/* Bar Chart — Most Active Users */}
                   <div style={dashboardStyles.chartCard}>
                     <div style={dashboardStyles.chartTitle}>
-                      👥 Most Active Users
+                      Most Active Users
                     </div>
                     {chartStats.mostActiveUsers.length === 0 ? (
                       <div

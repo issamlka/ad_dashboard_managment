@@ -75,7 +75,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p style={loginStyles.helperText}>Default: johndoe / Admin@123</p>
+        <p style={loginStyles.helperText}></p>
       </div>
     </div>
   );
