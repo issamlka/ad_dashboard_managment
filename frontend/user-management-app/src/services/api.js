@@ -71,19 +71,21 @@ export const auditLogService = {
   getRecentAdUsers: () => api.get("/auditlogs/recent-ad-users"), // ← add
 };
 
-export const adGroupsService = {
-  getAll: () => api.get("/adgroups"),
-  getMembers: (groupName) =>
-    api.get(`/adgroups/${encodeURIComponent(groupName)}/members`),
-  create: (data) => api.post("/adgroups", data),
-  addMember: (groupName, username) =>
-    api.post(`/adgroups/${encodeURIComponent(groupName)}/members`, {
-      username,
-    }),
-  removeMember: (groupName, username) =>
-    api.delete(
-      `/adgroups/${encodeURIComponent(groupName)}/members/${username}`,
-    ),
+export const adStructureService = {
+  // Groups
+  getGroups: () => api.get("/adstructure/groups"),
+  getGroupMembers: (groupName) =>
+    api.get(`/adstructure/groups/${groupName}/members`),
+  createGroup: (data) => api.post("/adstructure/groups", data),
+  addUserToGroup: (groupName, username) =>
+    api.post(`/adstructure/groups/${groupName}/members/${username}`),
+  removeUserFromGroup: (groupName, username) =>
+    api.delete(`/adstructure/groups/${groupName}/members/${username}`),
+
+  // OUs
+  getOUs: () => api.get("/adstructure/ous"),
+  createOU: (data) => api.post("/adstructure/ous", data),
+  getUsersInOU: (ouDN) => api.get(`/adstructure/ous/${ouDN}/users`),
 };
 
 export default api;

@@ -53,9 +53,6 @@ export default function AuditLogs() {
       DISABLE_AD_USER: auditLogsStyles.actionDisable,
       ENABLE_AD_USER: auditLogsStyles.actionEnable,
       LOGOUT: auditLogsStyles.actionLogin,
-      CREATE_AD_GROUP: auditLogsStyles.actionCreate,
-      ADD_USER_TO_GROUP: auditLogsStyles.actionCreate,
-      REMOVE_USER_FROM_GROUP: auditLogsStyles.actionDelete,
     };
     return map[action] || auditLogsStyles.actionLogin;
   };
@@ -70,9 +67,6 @@ export default function AuditLogs() {
       DISABLE_AD_USER: "",
       ENABLE_AD_USER: "",
       LOGOUT: "",
-      CREATE_AD_GROUP: "",
-      ADD_USER_TO_GROUP: "",
-      REMOVE_USER_FROM_GROUP: "",
     };
     return map[action] || "";
   };
@@ -137,8 +131,9 @@ export default function AuditLogs() {
               <option value="DISABLE_AD_USER">Disable AD User</option>
               <option value="ENABLE_AD_USER">Enable AD User</option>
               <option value="CREATE_AD_GROUP">Create AD Group</option>
-              <option value="ADD_USER_TO_GROUP">Add to Group</option>
-              <option value="REMOVE_USER_FROM_GROUP">Remove from Group</option>
+              <option value="ADD_TO_GROUP">Add to Group</option>
+              <option value="REMOVE_FROM_GROUP">Remove from Group</option>
+              <option value="CREATE_AD_OU">Create OU</option>
             </select>
 
             <select

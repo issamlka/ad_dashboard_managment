@@ -32,7 +32,7 @@ export const adUsersStyles = {
     marginBottom: "0",
   },
   addBtn: {
-    background: "linear-gradient(135deg, #3498db, #2980b9)",
+    background: "linear-gradient(135deg, #0a88db, #2980b9)",
     border: "none",
     borderRadius: "8px",
     padding: "10px 20px",
@@ -57,7 +57,7 @@ export const adUsersStyles = {
   tableTitle: {
     fontSize: "16px",
     fontWeight: "600",
-    color: "#2c3e50",
+    color: "#000000",
   },
   searchInput: {
     padding: "8px 15px",
@@ -68,7 +68,7 @@ export const adUsersStyles = {
     outline: "none",
   },
   tableHead: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#0080ff",
   },
   th: {
     padding: "12px 20px",
@@ -131,7 +131,7 @@ export const adUsersStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",

@@ -23,7 +23,9 @@ namespace UserManagement.API.Services
             _adminPassword = configuration["LdapSettings:AdminPassword"]!;
         }
 
-        // Get all groups
+        // ─── GROUPS ────────────────────────────────────────────────────
+
+// Get all groups
 public List<AdGroup> GetAllGroups()
 {
     var groups = new List<AdGroup>();
@@ -38,16 +40,21 @@ public List<AdGroup> GetAllGroups()
         );
 
         using var searcher = new PrincipalSearcher(new GroupPrincipal(context));
-
         foreach (var result in searcher.FindAll())
         {
             if (result is GroupPrincipal group)
             {
+                var members = group.GetMembers()
+                    .OfType<UserPrincipal>()
+                    .Select(m => m.SamAccountName)
+                    .ToList();
+
                 groups.Add(new AdGroup
                 {
                     Name = group.Name ?? "",
                     Description = group.Description ?? "",
-                    MemberCount = group.Members.Count(),
+                    MemberCount = members.Count,
+                    Members = members,
                 });
             }
         }
@@ -60,9 +67,8 @@ public List<AdGroup> GetAllGroups()
 }
 
 // Get group members
-public List<AdUser> GetGroupMembers(string groupName)
+public List<string> GetGroupMembers(string groupName)
 {
-    var members = new List<AdUser>();
     try
     {
         using var context = new PrincipalContext(
@@ -74,27 +80,18 @@ public List<AdUser> GetGroupMembers(string groupName)
         );
 
         var group = GroupPrincipal.FindByIdentity(context, groupName);
-        if (group == null) return members;
+        if (group == null) return new List<string>();
 
-        foreach (var member in group.Members)
-        {
-            if (member is UserPrincipal user)
-            {
-                members.Add(new AdUser
-                {
-                    Username = user.SamAccountName ?? "",
-                    FullName = user.DisplayName ?? user.SamAccountName ?? "",
-                    Email = user.EmailAddress ?? "",
-                    IsEnabled = user.Enabled ?? false,
-                });
-            }
-        }
+        return group.GetMembers()
+            .OfType<UserPrincipal>()
+            .Select(m => m.SamAccountName)
+            .ToList();
     }
     catch (Exception ex)
     {
         Console.WriteLine($"❌ GetGroupMembers Error: {ex.Message}");
+        return new List<string>();
     }
-    return members;
 }
 
 // Create group
@@ -105,7 +102,7 @@ public bool CreateGroup(string groupName, string description)
         using var context = new PrincipalContext(
             ContextType.Domain,
             _server,
-            _searchBase,
+            "CN=Users," + _searchBase,
             _adminUsername,
             _adminPassword
         );
@@ -128,7 +125,7 @@ public bool CreateGroup(string groupName, string description)
 }
 
 // Add user to group
-public bool AddUserToGroup(string groupName, string username)
+public bool AddUserToGroup(string username, string groupName)
 {
     try
     {
@@ -157,7 +154,7 @@ public bool AddUserToGroup(string groupName, string username)
 }
 
 // Remove user from group
-public bool RemoveUserFromGroup(string groupName, string username)
+public bool RemoveUserFromGroup(string username, string groupName)
 {
     try
     {
@@ -184,6 +181,113 @@ public bool RemoveUserFromGroup(string groupName, string username)
         return false;
     }
 }
+
+// ─── OUs ───────────────────────────────────────────────────────
+
+// Get all OUs
+public List<AdOU> GetAllOUs()
+{
+    var ous = new List<AdOU>();
+    try
+    {
+        using var entry = new DirectoryEntry(
+            $"LDAP://{_server}/{_searchBase}",
+            _adminUsername,
+            _adminPassword
+        );
+
+        using var searcher = new DirectorySearcher(entry)
+        {
+            Filter = "(objectClass=organizationalUnit)",
+            SearchScope = SearchScope.OneLevel
+        };
+
+        foreach (SearchResult result in searcher.FindAll())
+        {
+            var name = result.Properties["name"][0]?.ToString() ?? "";
+            var dn = result.Properties["distinguishedName"][0]?.ToString() ?? "";
+
+            ous.Add(new AdOU
+            {
+                Name = name,
+                DistinguishedName = dn,
+            });
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ GetAllOUs Error: {ex.Message}");
+    }
+    return ous;
+}
+
+// Create OU
+public bool CreateOU(string ouName, string description)
+{
+    try
+    {
+        using var entry = new DirectoryEntry(
+            $"LDAP://{_server}/{_searchBase}",
+            _adminUsername,
+            _adminPassword
+        );
+
+        var newOU = entry.Children.Add($"OU={ouName}", "organizationalUnit");
+        newOU.Properties["description"].Value = description;
+        newOU.CommitChanges();
+        return true;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ CreateOU Error: {ex.Message}");
+        return false;
+    }
+}
+
+// Get users in OU
+public List<AdUser> GetUsersInOU(string ouDN)
+{
+    var users = new List<AdUser>();
+    try
+    {
+        using var entry = new DirectoryEntry(
+            $"LDAP://{_server}/{ouDN}",
+            _adminUsername,
+            _adminPassword
+        );
+
+        using var searcher = new DirectorySearcher(entry)
+        {
+            Filter = "(objectClass=user)",
+            SearchScope = SearchScope.OneLevel
+        };
+
+        foreach (SearchResult result in searcher.FindAll())
+        {
+            var username = result.Properties["sAMAccountName"][0]?.ToString() ?? "";
+            var fullName = result.Properties["displayName"].Count > 0
+                ? result.Properties["displayName"][0]?.ToString() ?? username
+                : username;
+
+            users.Add(new AdUser
+            {
+                Username = username,
+                FullName = fullName,
+                Email = result.Properties["mail"].Count > 0
+                    ? result.Properties["mail"][0]?.ToString() ?? ""
+                    : "",
+                IsEnabled = true,
+            });
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ GetUsersInOU Error: {ex.Message}");
+    }
+    return users;
+}
+
+        
 
         // Get all AD users
         public List<AdUser> GetAllUsers()

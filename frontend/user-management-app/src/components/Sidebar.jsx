@@ -31,10 +31,10 @@ export default function Sidebar() {
       roles: ["Admin", "User"],
     },
     {
-      path: "/ad-groups",
+      path: "/ad-structure",
       icon: "",
-      label: "AD Groups",
-      roles: ["Admin", "User"],
+      label: "AD Structure",
+      roles: ["Admin"],
     },
   ];
 
@@ -43,7 +43,7 @@ export default function Sidebar() {
 
   return (
     <div style={sidebarStyles.sidebar}>
-      <div style={sidebarStyles.logo}>UserManager</div>
+      <div style={sidebarStyles.logo}>Nx AccessHub</div>
       <div style={sidebarStyles.menu}>
         {visibleItems.map((item) => (
           <div
@@ -67,10 +67,10 @@ export default function Sidebar() {
           <div>Loading...</div>
         ) : (
           <>
-            <div>🌐 {config.domain}</div>
-            <div style={sidebarStyles.footerSub}>🖥️ {config.server}</div>
+            <div>{config.domain}</div>
+            <div style={sidebarStyles.footerSub}>{config.server}</div>
             <div style={{ ...sidebarStyles.footerSub, marginTop: "4px" }}>
-              ✅ AD Connected
+              AD Connected
             </div>
           </>
         )}

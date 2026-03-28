@@ -2,7 +2,7 @@ export const sidebarStyles = {
   sidebar: {
     width: "250px",
     minHeight: "100vh",
-    background: "linear-gradient(180deg, #2c3e50 0%, #34495e 100%)",
+    background: "linear-gradient(180deg, #1d86ef 0%, #040609 100%)",
     color: "white",
     position: "fixed",
     top: 0,
@@ -22,7 +22,7 @@ export const sidebarStyles = {
     gap: "10px",
   },
   menu: {
-    padding: "15px 0",
+    padding: "0px 0",
     flex: 1,
   },
   menuItem: {
@@ -30,7 +30,7 @@ export const sidebarStyles = {
     alignItems: "center",
     gap: "12px",
     padding: "12px 20px",
-    color: "#bdc3c7",
+    color: "#ffffff",
     cursor: "pointer",
     transition: "all 0.3s",
     textDecoration: "none",
@@ -43,8 +43,8 @@ export const sidebarStyles = {
     padding: "12px 20px",
     color: "white",
     cursor: "pointer",
-    backgroundColor: "rgba(52, 152, 219, 0.3)",
-    borderLeft: "3px solid #3498db",
+    backgroundColor: "rgba(0, 153, 255, 0.3)",
+    borderLeft: "3px solid #ffffff",
     textDecoration: "none",
     fontSize: "14px",
   },
@@ -57,6 +57,6 @@ export const sidebarStyles = {
   footerSub: {
     fontSize: "11px",
     marginTop: "4px",
-    opacity: 0.7,
+    color: "#ffffff",
   },
 };

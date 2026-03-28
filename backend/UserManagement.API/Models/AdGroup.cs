@@ -5,5 +5,6 @@ namespace UserManagement.API.Models
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int MemberCount { get; set; }
+        public List<string> Members { get; set; } = new();
     }
 }

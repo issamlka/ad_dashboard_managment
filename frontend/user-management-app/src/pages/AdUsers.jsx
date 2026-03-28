@@ -287,7 +287,7 @@ export default function AdUsers() {
       {showModal && (
         <div style={adUsersStyles.modalOverlay}>
           <div style={adUsersStyles.modalCard}>
-            <h3 style={adUsersStyles.modalTitle}>➕ Create AD User</h3>
+            <h3 style={adUsersStyles.modalTitle}>Create AD User</h3>
             <p style={adUsersStyles.modalSubtitle}>
               Fill in the details to create a new domain user
             </p>

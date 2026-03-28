@@ -7,7 +7,7 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "react-hot-toast";
 import AuditLogs from "./pages/AuditLogs";
-import AdGroups from "./pages/AdGroups";
+import AdStructure from "./pages/AdStructure";
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -61,10 +61,10 @@ export default function App() {
           }
         />
         <Route
-          path="/ad-groups"
+          path="/ad-structure"
           element={
             <ProtectedRoute>
-              <AdGroups />
+              <AdStructure />
             </ProtectedRoute>
           }
         />
